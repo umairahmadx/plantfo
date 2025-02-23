@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'chatscreen.dart';
 
@@ -120,7 +121,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         border: Border.all(color: Colors.white, width: 3),
                       ),
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                            final ImagePicker picker = ImagePicker();
+                            final XFile? image = await picker.pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (image == null) return;
+
+                            setState(() {
+                              if (context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder:
+                                        (context) =>
+                                            ChatScreen(img: image.path),
+                                  ),
+                                );
+                              } // convert it to a Dart:io file
+                            });
+                        },
                         style: ButtonStyle(
                           minimumSize: WidgetStatePropertyAll(Size(50, 50)),
                           shape: WidgetStatePropertyAll(CircleBorder()),
