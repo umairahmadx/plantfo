@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String img;
+
+  const ChatScreen({super.key, this.img = ''});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -10,6 +14,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -19,10 +24,34 @@ class _ChatScreenState extends State<ChatScreen> {
               "PlantFo",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 3,),
+            SizedBox(height: 3),
             Text(
               "Powered by AI",
               style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+            ),
+          ],
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.all(10),
+              alignment: Alignment.topRight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(200),
+              ),
+              child:
+              widget.img.isEmpty
+                  ? SizedBox.shrink()
+                  : ClipRRect(
+                borderRadius: BorderRadius.circular(15), // Curves the image corners
+                child: Image.file(
+                  File(widget.img),
+                  width: screenWidth * 0.6,
+                  fit: BoxFit.cover, // Ensures proper fitting
+                ),
+              ),
             ),
           ],
         ),

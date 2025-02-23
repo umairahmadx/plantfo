@@ -48,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -69,7 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            CupertinoPageRoute(builder: (context) => ChatScreen()),
+                            CupertinoPageRoute(
+                              builder: (context) => ChatScreen(),
+                            ),
                           );
                         },
                         icon: Icon(
@@ -81,10 +82,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             "PlantFo",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                          Text("Powered by AI",
-                            style: TextStyle(fontSize:10,color: Colors.grey[400]),)
+                          Text(
+                            "Powered by AI",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[400],
+                            ),
+                          ),
                         ],
                       ),
                       IconButton(
@@ -115,7 +125,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           minimumSize: WidgetStatePropertyAll(Size(50, 50)),
                           shape: WidgetStatePropertyAll(CircleBorder()),
                         ),
-                        child: Icon(Icons.photo_library_rounded, size: 20,color: Colors.black),
+                        child: Icon(
+                          Icons.photo_library_rounded,
+                          size: 20,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                     Column(
@@ -130,12 +144,34 @@ class _HomeScreenState extends State<HomeScreen> {
                             border: Border.all(color: Colors.white, width: 3),
                           ),
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              try {
+                                final image = await _controller.takePicture();
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder:
+                                          (context) =>
+                                              ChatScreen(img: image.path),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                print(e);
+                              }
+                            },
                             style: ButtonStyle(
                               shape: WidgetStatePropertyAll(CircleBorder()),
-                              padding: WidgetStatePropertyAll(EdgeInsets.all(16)),
+                              padding: WidgetStatePropertyAll(
+                                EdgeInsets.all(16),
+                              ),
                             ),
-                            child: Icon(Icons.search_rounded, size: 25,color: Colors.black,),
+                            child: Icon(
+                              Icons.search_rounded,
+                              size: 25,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                         SizedBox(height: 50),
@@ -152,14 +188,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            CupertinoPageRoute(builder: (context) => ChatScreen()),
+                            CupertinoPageRoute(
+                              builder: (context) => ChatScreen(),
+                            ),
                           );
                         },
                         style: ButtonStyle(
                           minimumSize: WidgetStatePropertyAll(Size(50, 50)),
                           shape: WidgetStatePropertyAll(CircleBorder()),
                         ),
-                        child: Icon(Icons.chat_bubble_outline_rounded, size: 20,color: Colors.black),
+                        child: Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 20,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ],
