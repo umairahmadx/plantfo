@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 }
                               } catch (e) {
-                                print(e);
+                                debugPrint('$e');
                               }
                             },
                             style: ButtonStyle(
