@@ -21,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool flash = false;
   bool isLoading = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -37,11 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void changeState(){
+  void changeState() {
     setState(() {
-      isLoading=!isLoading;
+      isLoading = !isLoading;
     });
   }
+
   void flashlight() {
     bool newFlashState = !flash;
     _controller.setFlashMode(newFlashState ? FlashMode.torch : FlashMode.off);
@@ -52,9 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    if (_controller.value.isInitialized) {
-      _controller.dispose();
-    }
+    _controller.dispose();
+
     super.dispose();
   }
 
@@ -138,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.push(
                                 context,
                                 CupertinoPageRoute(
-                                  builder: (context) => ChatScreen(),
+                                  builder: (context) => ChatScreen(sending: true,),
                                 ),
                               );
                             }
@@ -173,13 +172,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _controller.setFlashMode(FlashMode.off);
                                 imageFinal = image.path;
                                 File? compress = await compressFile(
-                                    File(imageFinal), changeState);
+                                  File(imageFinal),
+                                  changeState,
+                                );
                                 imageFinal = compress!.path;
                                 if (context.mounted) {
                                   Navigator.push(
                                     context,
                                     CupertinoPageRoute(
-                                      builder: (context) => ChatScreen(),
+                                      builder: (context) => ChatScreen(sending: true,),
                                     ),
                                   );
                                 }
@@ -239,9 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Positioned.fill(
                 child: Container(
                   color: Color.fromRGBO(0, 0, 0, 0.7),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
               ),
           ],
@@ -249,5 +248,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 }

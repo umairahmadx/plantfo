@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final bool sending;
+  const ChatScreen({this.sending = false, super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -11,22 +12,53 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   String imagePath = "";
-  bool isLoading=false;
+  String messageFinal = "";
+  bool isLoading = false;
+  bool sent = false;
+
   @override
   void initState() {
-    imagePath = imageFinal;
     super.initState();
+    imagePath = imageFinal;
+    messageFinal = message;
+
+    if (widget.sending) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _callApi();
+      });
+    }
+
   }
+
+  Future<void> _callApi() async {
+    await apiCall(imagePath);
+    setState(() {
+      messageFinal = message; // Update message after API call completes
+      sent = true; // Mark as sent
+    });
+  }
+
   Future<void> pickImage() async {
     await imagePicker(changeState);
     setState(() {
       imagePath = imageFinal;
+      sent = false;
+      messageFinal = "";
+      message = "";
     });
 
+    if (imagePath.isNotEmpty) {
+      await apiCall(imagePath); // Call the API after image selection
+      setState(() {
+        messageFinal = message;
+        sent = true; // Update the UI after API response
+      });
+    }
   }
-  void changeState(){
+
+  void changeState() {
     setState(() {
-      isLoading=!isLoading;
+      isLoading = !isLoading;
     });
   }
 
@@ -56,20 +88,46 @@ class _ChatScreenState extends State<ChatScreen> {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                Container(
-                  margin: EdgeInsets.all(10),
-                  alignment: Alignment.bottomRight,
-                  child: imagePath.isEmpty
-                      ? SizedBox.shrink()
-                      : ClipRRect(
-                    borderRadius: BorderRadius.circular(15), // Rounded corners
-                    child: Image.file(
-                      File(imagePath),
-                      width: screenWidth * 0.6,
-                      fit: BoxFit.cover,
-                    ),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        alignment: Alignment.bottomRight,
+                        child:
+                            imagePath.isEmpty
+                                ? SizedBox.shrink()
+                                : ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  // Rounded corners
+                                  child: Image.file(
+                                    File(imagePath),
+                                    width: screenWidth * 0.6,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                      ),
+                      SizedBox(height: 5,),
+                      Visibility(visible:imagePath.isNotEmpty,child: Text(messageFinal.isNotEmpty ? "Sent" : "Sending")),
+                    ],
                   ),
                 ),
+                Visibility(
+                  visible: messageFinal.isNotEmpty,
+                  child: Container(
+                    margin: EdgeInsets.only(right: 50, left: 10, top: 10),
+                    padding: EdgeInsets.symmetric(vertical: 10,horizontal: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      color: Colors.lightBlueAccent[200],
+                    ),
+                    alignment: Alignment.bottomLeft,
+                    child: Text(messageFinal,style: TextStyle(color: Colors.white,fontSize: 15),),
+                  ),
+                ),
+                SizedBox(height: 120,)
               ],
             ),
           ),
@@ -117,9 +175,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Positioned.fill(
             child: Container(
               color: Color.fromRGBO(0, 0, 0, 0.7),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: Center(child: CircularProgressIndicator()),
             ),
           ),
       ],
