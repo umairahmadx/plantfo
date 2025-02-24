@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:plantfo/functions.dart';
 
 import 'chatscreen.dart';
 
@@ -17,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late CameraController _controller;
   bool flash = false;
+  bool isLoading = false;
+
 
   @override
   void initState() {
@@ -24,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _controller = CameraController(
       widget.camera[0],
       enableAudio: false,
-      ResolutionPreset.max, // Use max resolution for full-screen clarity
+      ResolutionPreset.ultraHigh,
     );
 
     _controller.initialize().then((_) {
@@ -33,6 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void changeState(){
+    setState(() {
+      isLoading=!isLoading;
+    });
+  }
   void flashlight() {
     bool newFlashState = !flash;
     _controller.setFlashMode(newFlashState ? FlashMode.torch : FlashMode.off);
@@ -122,24 +131,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
-                            final ImagePicker picker = ImagePicker();
-                            final XFile? image = await picker.pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (image == null) return;
+                          await imagePicker(changeState);
 
-                            setState(() {
-                              if (context.mounted) {
-                                Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder:
-                                        (context) =>
-                                            ChatScreen(img: image.path),
-                                  ),
-                                );
-                              } // convert it to a Dart:io file
-                            });
+                          setState(() {
+                            if (context.mounted) {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (context) => ChatScreen(),
+                                ),
+                              );
+                            }
+                          });
                         },
                         style: ButtonStyle(
                           minimumSize: WidgetStatePropertyAll(Size(50, 50)),
@@ -167,13 +170,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () async {
                               try {
                                 final image = await _controller.takePicture();
+                                _controller.setFlashMode(FlashMode.off);
+                                imageFinal = image.path;
+                                File? compress = await compressFile(
+                                    File(imageFinal), changeState);
+                                imageFinal = compress!.path;
                                 if (context.mounted) {
                                   Navigator.push(
                                     context,
                                     CupertinoPageRoute(
-                                      builder:
-                                          (context) =>
-                                              ChatScreen(img: image.path),
+                                      builder: (context) => ChatScreen(),
                                     ),
                                   );
                                 }
@@ -197,7 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(height: 50),
                       ],
                     ),
-
                     Container(
                       padding: EdgeInsets.all(3),
                       decoration: BoxDecoration(
@@ -228,9 +233,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+
+            // Centered CircularProgressIndicator
+            if (isLoading)
+              Positioned.fill(
+                child: Container(
+                  color: Color.fromRGBO(0, 0, 0, 0.5),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+
 }
