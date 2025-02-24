@@ -116,7 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Color.fromRGBO(0, 0, 0, 0.5),
+              color: Color.fromRGBO(0, 0, 0, 0.7),
               child: Center(
                 child: CircularProgressIndicator(),
               ),
