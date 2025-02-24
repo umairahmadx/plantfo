@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -24,6 +25,15 @@ Future<File?> compressFile(File image,Function callState) async {
 
     resultFile = File(result.path);
   } while ((resultFile.lengthSync() / 1024) > 1000 && quality > 10);
+
+  try {
+    if (await image.exists()) {
+      await image.delete();
+    }
+  } catch (e) {
+    debugPrint("Error deleting original file: $e");
+  }
+
   callState();
   return resultFile;
 }
