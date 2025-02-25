@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    dynamicAPIGet(context);
     _controller = CameraController(
       widget.camera[0],
       enableAudio: false,

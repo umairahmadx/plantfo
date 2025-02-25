@@ -8,6 +8,20 @@ import 'package:image_picker/image_picker.dart';
 
 String imageFinal = "";
 String message = "";
+String apiId = "https://6caa-49-36-169-241.ngrok-free.app/";
+
+Future<void> dynamicAPIGet(BuildContext context) async {
+  const repositoryOwner = 'umairahmadx'; //add your own owner name
+  const repositoryName = 'plantfo'; //your repoName
+  final response = await http.get(Uri.parse(
+    'https://api.github.com/repos/$repositoryOwner/$repositoryName/releases/latest',
+  ));
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = json.decode(response.body);
+    final name = data['name'];
+    apiId = name;
+  }
+}
 
 Future<File?> compressFile(File image, Function callState) async {
   callState(); // Indicate processing start
@@ -70,7 +84,7 @@ Future<void> apiCall(String imagePath) async {
     var base64Image = base64Encode(imageBytes);
 
     var response = await http.post(
-      Uri.parse("https://6caa-49-36-169-241.ngrok-free.app/"), // Replace with actual API endpoint
+      Uri.parse(apiId), // Replace with actual API endpoint
       body: jsonEncode({'image': base64Image}),
       headers: {"Content-Type": "application/json"}, // Ensure correct format
     );
