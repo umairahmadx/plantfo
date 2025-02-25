@@ -79,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 SizedBox(height: 3),
                 Text(
-                  "Powered by AI",
+                  "Powered by OPR",
                   style: TextStyle(fontSize: 10, color: Colors.grey[400]),
                 ),
               ],

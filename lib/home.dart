@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           Text(
-                            "Powered by AI",
+                            "Powered by OPR",
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.grey[400],

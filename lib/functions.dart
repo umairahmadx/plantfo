@@ -70,7 +70,7 @@ Future<void> apiCall(String imagePath) async {
     var base64Image = base64Encode(imageBytes);
 
     var response = await http.post(
-      Uri.parse("YOUR_API_ENDPOINT"), // Replace with actual API endpoint
+      Uri.parse("https://6caa-49-36-169-241.ngrok-free.app/"), // Replace with actual API endpoint
       body: jsonEncode({'image': base64Image}),
       headers: {"Content-Type": "application/json"}, // Ensure correct format
     );
