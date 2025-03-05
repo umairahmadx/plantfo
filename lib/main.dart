@@ -8,7 +8,7 @@ List<CameraDescription> cameras = [];
 Future<void> main() async{
   await dotenv.load(fileName: ".env");
   final apiKey=dotenv.env['API_KEY'];
-  print(apiKey);
+
   WidgetsFlutterBinding.ensureInitialized();
   cameras = await availableCameras();
   Gemini.init(apiKey: apiKey!);

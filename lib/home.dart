@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.black,
               child: SizedBox.expand(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20)),
                   child: CameraPreview(_controller),
                 ),
               ),
