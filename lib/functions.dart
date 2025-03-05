@@ -46,7 +46,7 @@ Future<File?> compressFile(File image, Function callState) async {
   return resultFile;
 }
 
-Future<void> imagePickerWeb(Function callState) async {
+Future<void> imagePickerWeb() async {
   XFile? img2;
 
   // Pick image based on platform
@@ -73,6 +73,7 @@ Future<void> imagePicker(Function callState) async {
 }
 Future<String> apiCall(String imagePath) async {
   File imageFile = File(imagePath);
+  message="";
   try {
     final response = await Gemini.instance.prompt(parts: [
       Part.bytes(await imageFile.readAsBytes()),
@@ -94,6 +95,7 @@ Future<String> apiCall(String imagePath) async {
 }
 
 Future<String> apiCallWeb(Uint8List bytes) async {
+  message="";
   try {
     final response = await Gemini.instance.prompt(
       parts: [

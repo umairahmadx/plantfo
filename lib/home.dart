@@ -68,14 +68,21 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.only(top: 80),
               color: Colors.black,
-              child: SizedBox.expand(child: ClipRRect(borderRadius: BorderRadius.circular(20),child: CameraPreview(_controller))),
+              child: SizedBox.expand(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: CameraPreview(_controller),
+                ),
+              ),
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
+                Container(
+                  height: 80,
                   padding: EdgeInsets.all(10),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
@@ -93,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             "PlantFo",
@@ -135,14 +143,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
-                          await imagePicker(changeState);
+                          if (kIsWeb) {
+                            await imagePickerWeb();
+                          } else {
+                            await imagePicker(changeState);
+                          }
 
                           setState(() {
+                            message="";
                             if (context.mounted) {
                               Navigator.push(
                                 context,
                                 CupertinoPageRoute(
-                                  builder: (context) => ChatScreen(sending: true,),
+                                  builder:
+                                      (context) => ChatScreen(sending: true),
                                 ),
                               );
                             }
@@ -173,7 +187,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ElevatedButton(
                             onPressed: () async {
                               try {
-                                final XFile image = await _controller.takePicture();
+                                final XFile image =
+                                    await _controller.takePicture();
                                 message = "";
                                 imageFinal = image.path;
                                 if (kIsWeb) {
@@ -183,7 +198,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       CupertinoPageRoute(
-                                        builder: (context) => ChatScreen(sending: true),
+                                        builder:
+                                            (context) =>
+                                                ChatScreen(sending: true),
                                       ),
                                     );
                                   }
@@ -197,7 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       CupertinoPageRoute(
-                                        builder: (context) => ChatScreen(sending: true),
+                                        builder:
+                                            (context) =>
+                                                ChatScreen(sending: true),
                                       ),
                                     );
                                   }
@@ -254,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Centered CircularProgressIndicator
-            if (isLoading)
+            if (isLoading && imageBytes == null)
               Positioned.fill(
                 child: Container(
                   color: Color.fromRGBO(0, 0, 0, 0.7),

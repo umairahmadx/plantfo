@@ -51,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> pickImage() async {
     if (kIsWeb) {
-      await imagePickerWeb(changeState);
+      await imagePickerWeb();
       if (imageBytes != null) {
         setState(() {
           byte = imageBytes;
@@ -116,7 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Container(
                         alignment: Alignment.bottomRight,
                         child:
-                            imagePath.isEmpty || imageBytes==null
+                            imagePath.isEmpty && imageBytes==null
                                 ? SizedBox.shrink()
                                 : ClipRRect(
                                   borderRadius: BorderRadius.circular(15),
