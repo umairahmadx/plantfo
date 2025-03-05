@@ -1,27 +1,15 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 String imageFinal = "";
 String message = "";
-String apiId = "https://6caa-49-36-169-241.ngrok-free.app/";
+Uint8List? imageBytes=null;
 
-Future<void> dynamicAPIGet(BuildContext context) async {
-  const repositoryOwner = 'umairahmadx'; //add your own owner name
-  const repositoryName = 'plantfo'; //your repoName
-  final response = await http.get(Uri.parse(
-    'https://api.github.com/repos/$repositoryOwner/$repositoryName/releases/latest',
-  ));
-  if (response.statusCode == 200) {
-    final Map<String, dynamic> data = json.decode(response.body);
-    final name = data['name'];
-    apiId = name;
-  }
-}
+final gemini = Gemini.instance;
 
 Future<File?> compressFile(File image, Function callState) async {
   callState(); // Indicate processing start
@@ -58,6 +46,18 @@ Future<File?> compressFile(File image, Function callState) async {
   return resultFile;
 }
 
+Future<void> imagePickerWeb(Function callState) async {
+  XFile? img2;
+
+  // Pick image based on platform
+  final ImagePicker picker = ImagePicker();
+  img2 = await picker.pickImage(source: ImageSource.gallery, imageQuality: 60);
+  if(img2!=null){
+    final bytes = await img2.readAsBytes();
+    imageBytes = bytes;
+  }
+}
+
 Future<void> imagePicker(Function callState) async {
   final ImagePicker picker = ImagePicker();
   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -71,31 +71,47 @@ Future<void> imagePicker(Function callState) async {
     debugPrint("Compression failed or file is null.");
   }
 }
-
-Future<void> apiCall(String imagePath) async {
+Future<String> apiCall(String imagePath) async {
+  File imageFile = File(imagePath);
   try {
-    File imageFile = File(imagePath);
-    if (!await imageFile.exists()) {
-      debugPrint("File does not exist: $imagePath");
-      return;
-    }
+    final response = await Gemini.instance.prompt(parts: [
+      Part.bytes(await imageFile.readAsBytes()),
+      Part.text("Identify and Describe The Object In this Image?"),
+    ]);
 
-    var imageBytes = await imageFile.readAsBytes(); // Use File read instead of rootBundle
-    var base64Image = base64Encode(imageBytes);
-
-    var response = await http.post(
-      Uri.parse(apiId), // Replace with actual API endpoint
-      body: jsonEncode({'image': base64Image}),
-      headers: {"Content-Type": "application/json"}, // Ensure correct format
-    );
-
-    if (response.statusCode == 200) {
-      message = response.body; // Store response message
+    if (response != null && response.output != null) {
+      message = response.output!;
+      print(message);
+      return message;
     } else {
-      message = "Error: ${response.statusCode} - ${response.body}";
+      debugPrint("API response is null.");
+      return "No response from API.";
     }
   } catch (e) {
-    message = "$e";
-    debugPrint("API Call Exception: $e"); // Handle and log errors
+    debugPrint("Error during API call: $e");
+    return "Error processing request.";
+  }
+}
+
+Future<String> apiCallWeb(Uint8List bytes) async {
+  try {
+    final response = await Gemini.instance.prompt(
+      parts: [
+        Part.bytes(bytes),
+        Part.text("Identify and Describe The Object In this Image?"),
+      ],
+    );
+
+    if (response != null && response.output != null) {
+      message = response.output!;
+      print(message);
+      return message;
+    } else {
+      debugPrint("API response is null.");
+      return "No response from API.";
+    }
+  } catch (e) {
+    debugPrint("Error during API call: $e");
+    return "Error processing request.";
   }
 }

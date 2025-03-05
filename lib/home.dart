@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:plantfo/functions.dart';
@@ -24,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    dynamicAPIGet(context);
     _controller = CameraController(
       widget.camera[0],
       enableAudio: false,
@@ -65,7 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
         body: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            SizedBox.expand(child: CameraPreview(_controller)),
+            Container(
+              padding: const EdgeInsets.only(top: 80),
+              color: Colors.black,
+              child: SizedBox.expand(child: ClipRRect(borderRadius: BorderRadius.circular(20),child: CameraPreview(_controller))),
+            ),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -169,21 +173,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ElevatedButton(
                             onPressed: () async {
                               try {
-                                final image = await _controller.takePicture();
-                                _controller.setFlashMode(FlashMode.off);
+                                final XFile image = await _controller.takePicture();
+                                message = "";
                                 imageFinal = image.path;
-                                File? compress = await compressFile(
-                                  File(imageFinal),
-                                  changeState,
-                                );
-                                imageFinal = compress!.path;
-                                if (context.mounted) {
-                                  Navigator.push(
-                                    context,
-                                    CupertinoPageRoute(
-                                      builder: (context) => ChatScreen(sending: true,),
-                                    ),
+                                if (kIsWeb) {
+                                  Uint8List imgByte = await image.readAsBytes();
+                                  imageBytes = imgByte;
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      CupertinoPageRoute(
+                                        builder: (context) => ChatScreen(sending: true),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  File? compress = await compressFile(
+                                    File(imageFinal),
+                                    changeState,
                                   );
+                                  imageFinal = compress!.path;
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      CupertinoPageRoute(
+                                        builder: (context) => ChatScreen(sending: true),
+                                      ),
+                                    );
+                                  }
                                 }
                               } catch (e) {
                                 debugPrint('$e');

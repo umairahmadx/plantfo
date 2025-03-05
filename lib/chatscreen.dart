@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class ChatScreen extends StatefulWidget {
   final bool sending;
+
   const ChatScreen({this.sending = false, super.key});
 
   @override
@@ -12,47 +14,63 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   String imagePath = "";
-  String messageFinal = "";
   bool isLoading = false;
   bool sent = false;
+  Uint8List? byte = null;
 
   @override
   void initState() {
     super.initState();
     imagePath = imageFinal;
-    messageFinal = message;
 
+    byte = imageBytes;
     if (widget.sending) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _callApi();
+        if (kIsWeb) {
+          _callApiWeb();
+        } else {
+          _callApi();
+        }
       });
     }
+  }
 
+  Future<void> _callApiWeb() async {
+    await apiCallWeb(byte!);
+    setState(() {
+      sent = true;
+    });
   }
 
   Future<void> _callApi() async {
     await apiCall(imagePath);
     setState(() {
-      messageFinal = message; // Update message after API call completes
-      sent = true; // Mark as sent
+      sent = true;
     });
   }
 
   Future<void> pickImage() async {
-    await imagePicker(changeState);
-    setState(() {
-      imagePath = imageFinal;
-      sent = false;
-      messageFinal = "";
-      message = "";
-    });
+    if (kIsWeb) {
+      await imagePickerWeb(changeState);
+      if (imageBytes != null) {
+        setState(() {
+          byte = imageBytes;
+          message = "";
+          sent = false;
+        });
+        await _callApiWeb();
+      }
+    } else {
+      await imagePicker(changeState);
+      if (imageFinal.isNotEmpty) {
+        setState(() {
+          imagePath = imageFinal;
+          message="";
+          sent = false;
+        });
 
-    if (imagePath.isNotEmpty) {
-      await apiCall(imagePath); // Call the API after image selection
-      setState(() {
-        messageFinal = message;
-        sent = true; // Update the UI after API response
-      });
+        await _callApi();
+      }
     }
   }
 
@@ -74,7 +92,7 @@ class _ChatScreenState extends State<ChatScreen> {
             title: Column(
               children: [
                 Text(
-                  "PlantFo",
+                  "PicScan",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 3),
@@ -86,6 +104,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           body: SingleChildScrollView(
+            physics: ScrollPhysics(parent: BouncingScrollPhysics()),
             child: Column(
               children: [
                 Padding(
@@ -97,37 +116,69 @@ class _ChatScreenState extends State<ChatScreen> {
                       Container(
                         alignment: Alignment.bottomRight,
                         child:
-                            imagePath.isEmpty
+                            imagePath.isEmpty || imageBytes==null
                                 ? SizedBox.shrink()
                                 : ClipRRect(
                                   borderRadius: BorderRadius.circular(15),
                                   // Rounded corners
-                                  child: Image.file(
+                                  child: kIsWeb
+                                      ? Image.memory(
+                                    imageBytes!,
+                                    width: screenWidth * 0.6,
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Image.file(
                                     File(imagePath),
                                     width: screenWidth * 0.6,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                       ),
-                      SizedBox(height: 5,),
-                      Visibility(visible:imagePath.isNotEmpty,child: Text(messageFinal.isNotEmpty ? "Sent" : "Sending")),
+                      SizedBox(height: 5),
+                      Visibility(
+                        visible: imagePath.isNotEmpty,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              message.isNotEmpty ? "Sent" : "Sending",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                            SizedBox(width: 5),
+                            Icon(
+                              message.isNotEmpty
+                                  ? Icons.done_all_rounded
+                                  : Icons.schedule_rounded,
+                              size: 15,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Visibility(
-                  visible: messageFinal.isNotEmpty,
+                  visible: message.isNotEmpty,
                   child: Container(
-                    margin: EdgeInsets.only(right: 50, left: 10, top: 10),
-                    padding: EdgeInsets.symmetric(vertical: 10,horizontal: 15),
+                    margin: EdgeInsets.only(right: 50, left: 10, top: 0),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                        topLeft: Radius.circular(4),
+                      ),
                       color: Colors.lightBlueAccent[200],
                     ),
                     alignment: Alignment.bottomLeft,
-                    child: Text(messageFinal,style: TextStyle(color: Colors.white,fontSize: 15),),
+                    child: Text(
+                      message,
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
                   ),
                 ),
-                SizedBox(height: 120,)
+                SizedBox(height: 120),
               ],
             ),
           ),
@@ -138,9 +189,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton(
-                    onPressed: () async {
-                      await pickImage();
-                    },
+                    onPressed: pickImage,
                     style: ButtonStyle(
                       minimumSize: WidgetStatePropertyAll(Size(70, 70)),
                       shape: WidgetStatePropertyAll(CircleBorder()),
